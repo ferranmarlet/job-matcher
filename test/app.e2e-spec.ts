@@ -1,29 +1,19 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import request from 'supertest';
-import { App } from 'supertest/types.js';
-import { AppModule } from './../src/app.module.js';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 
-describe('AppController (e2e)', () => {
-  let app: INestApplication<App>;
+const runCli = (args: string[]) =>
+  promisify(execFile)('node', ['dist/main.js', ...args]);
 
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
+describe('job-matcher CLI (e2e)', () => {
+  it('runs the match command by default and exits with code 0', async () => {
+    const { stdout } = await runCli([]);
 
-    app = moduleFixture.createNestApplication();
-    await app.init();
+    expect(stdout).toContain('Match finished');
   });
 
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
-  });
+  it('prints help', async () => {
+    const { stdout } = await runCli(['--help']);
 
-  afterEach(async () => {
-    await app.close();
+    expect(stdout).toContain('match');
   });
 });

@@ -1,8 +1,10 @@
-import { NestFactory } from '@nestjs/core';
+import { CommandFactory } from 'nest-commander';
 import { AppModule } from './app.module.js';
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  await app.listen(process.env.PORT ?? 3000);
-}
-await bootstrap();
+await CommandFactory.run(AppModule, {
+  logger: ['log', 'warn', 'error'],
+  serviceErrorHandler: (error) => {
+    console.error(error);
+    process.exitCode = 1;
+  },
+});
